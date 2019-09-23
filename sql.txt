@@ -1,0 +1,54 @@
+511. Game Play Analysis I
+https://leetcode.com/problems/game-play-analysis-i/
+512. Game Play Analysis II
+https://leetcode.com/problems/game-play-analysis-ii/
+534. Game Play Analysis III
+https://leetcode.com/problems/game-play-analysis-iii/
+550. Game Play Analysis IV
+https://leetcode.com/problems/game-play-analysis-iv/
+1097. Game Play Analysis V
+https://leetcode.com/problems/game-play-analysis-v/
+
+DDL
+drop table Activity;
+Create table Activity (player_id int, device_id int, event_date date, games_played int);
+insert into Activity (player_id, device_id, event_date, games_played) values (1, 2, to_date('2016-03-01','YYYY-MM-DD'), 5);
+insert into Activity (player_id, device_id, event_date, games_played) values (1, 2, to_date('2016-03-02','YYYY-MM-DD'), 6);
+insert into Activity (player_id, device_id, event_date, games_played) values (2, 3, to_date('2017-06-25','YYYY-MM-DD'), 1);
+insert into Activity (player_id, device_id, event_date, games_played) values (3, 1, to_date('2016-03-01','YYYY-MM-DD'), 0);
+insert into Activity (player_id, device_id, event_date, games_played) values (3, 4, to_date('2018-07-31','YYYY-MM-DD'), 5);
+
+511. Game Play Analysis I
+select player_id, min(event_date) first_login from activity group by player_id
+
+512. Game Play Analysis II
+select player_id, device_id
+from Activity 
+where (player_id, event_date) in 
+(select player_id, min(event_date) md
+from Activity 
+ group by player_id)
+ 
+534. Game Play Analysis III
+select  a2.player_id, a2.event_date, sum(a1.games_played) games_played_so_far 
+from Activity a1 inner join Activity a2
+on a1.player_id = a2.player_id and a1.event_date <= a2.event_date
+group by a2.player_id, a2.event_date
+order by a2.player_id,a2.event_date;
+
+550. Game Play Analysis IV
+select round(count(distinct a2.player_id)/count(distinct a1.player_id),2) fraction  
+from
+(select player_id, min(event_date) first_login from Activity group by player_id) a1
+left join
+Activity a2
+on a1.first_login + 1 = a2.event_date
+and a1.player_id = a2.player_id
+
+1097. Game Play Analysis V
+select a1.first_login as install_dt, count(distinct a1.player_id) installs, round(sum(case when a2.event_date is not null then 1 else 0 end) / count(distinct a1.player_id) ,2) Day1_retention  
+from
+(select player_id, min(event_date) first_login from activity group by player_id) a1 
+left join activity a2 
+on a1.player_id = a2.player_id and a1.first_login + 1 = a2.event_date
+group by install_dt
