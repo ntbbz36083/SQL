@@ -117,3 +117,65 @@ from
 left join activity a2 
 on a1.player_id = a2.player_id and a1.first_login + 1 = a2.event_date
 group by install_dt
+
+1511. Customer Order Frequency
+https://leetcode.com/problems/customer-order-frequency/
+
+select customer_id, name
+from customers join orders using(customer_id)
+join product using(product_id)
+group by customer_id
+having sum(if(left(order_date,7)='2020-06',quantity, 0)*price)>=100 and
+sum(if(left(order_date,7)='2020-07',quantity, 0)*price)>=100
+
+1517. Find Users With Valid E-Mails
+https://leetcode.com/problems/find-users-with-valid-e-mails/
+
+SELECT *
+FROM Users
+WHERE REGEXP_LIKE(mail,'^[A-Za-z][A-Za-z0-9\_\.\-]*@leetcode\.com$')
+
+1527. Patients With a Condition
+https://leetcode.com/problems/patients-with-a-condition/
+
+select patient_id, patient_name, conditions
+from patients
+where conditions like '%DIAB1%'
+
+1607. Sellers With No Sales
+https://leetcode.com/problems/sellers-with-no-sales/
+
+select s.seller_name
+from 
+(select seller_id from orders 
+ where sale_date <= '2020-12-31' 
+ and sale_date >= '2020-01-01') o 
+right join seller s
+on o.seller_id = s.seller_id
+where o.seller_id is null
+order by s.seller_name
+
+1623. All Valid Triplets That Can Represent a Country
+https://leetcode.com/problems/all-valid-triplets-that-can-represent-a-country/
+
+select sa.student_name as member_A, 
+sb.student_name as member_B, 
+sc.student_name as member_C
+from SchoolA sa cross join SchoolB sb
+cross join SchoolC sc
+where sa.student_id != sb.student_id
+and sb.student_id != sc.student_id
+and sa.student_id != sc.student_id
+and sa.student_name != sb.student_name
+and sb.student_name != sc.student_name
+and sa.student_name != sc.student_name
+
+1633. Percentage of Users Attended a Contest
+https://leetcode.com/problems/percentage-of-users-attended-a-contest/
+
+select r.contest_id, 
+round(count(distinct r.user_id)/(select count(distinct user_id) from users)*100,2) as percentage
+from users u right join register r 
+on u.user_id = r.user_id
+group by r.contest_id
+order by percentage desc, contest_id 
