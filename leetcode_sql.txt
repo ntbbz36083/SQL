@@ -1,3 +1,21 @@
+175.Combine Two Tables
+https://leetcode.com/problems/combine-two-tables/
+
+select p.firstname, p.lastname, a.city, a.state
+from person p left join address a
+on p.personid = a.personid
+
+176. Second Highest Salary
+https://leetcode.com/problems/second-highest-salary/
+
+select (
+    select distinct salary 
+    from employee e 
+    where 1= (select count(distinct salary) 
+              from employee where e.salary < salary)
+
+) as SecondHighestSalary
+
 511. Game Play Analysis I
 https://leetcode.com/problems/game-play-analysis-i/
 512. Game Play Analysis II
