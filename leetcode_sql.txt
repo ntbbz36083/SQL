@@ -31,6 +31,37 @@ END
 178. Rank Scores
 https://leetcode.com/problems/rank-scores/
 
+select score, dense_rank() over(order by score desc) as 'Rank' 
+from scores
+
+180. Consecutive Numbers
+https://leetcode.com/problems/consecutive-numbers/
+
+select distinct a1.num as ConsecutiveNums
+from logs a1 join logs a2 
+on a1.id = a2.id-1 and a1.num=a2.num
+join logs a3 
+on a2.id = a3.id-1 and a2.num = a3.num
+
+181. Employees Earning More Than Their Managers
+https://leetcode.com/problems/employees-earning-more-than-their-managers/
+
+select e1.name as employee
+from employee e1 inner join employee e2
+on e1.managerid = e2.id
+where e1.salary > e2.salary
+
+182. Duplicate Emails
+https://leetcode.com/problems/duplicate-emails/
+select email from person group by email having count(*) > 1
+
+select name as Customers from customers
+where id not in (select customerid from orders)
+
+select c.name as customers
+from customers c left join orders o
+on c.id = o.CustomerId
+where o.CustomerId is null
 
 511. Game Play Analysis I
 https://leetcode.com/problems/game-play-analysis-i/
