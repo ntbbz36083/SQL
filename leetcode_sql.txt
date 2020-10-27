@@ -16,6 +16,22 @@ select (
 
 ) as SecondHighestSalary
 
+177. Nth Highest Salary
+https://leetcode.com/problems/nth-highest-salary/
+
+CREATE FUNCTION getNthHighestSalary(N INT) RETURNS INT
+BEGIN
+  RETURN (
+      # Write your MySQL query statement below.
+      select distinct salary from employee e where N-1=
+      (select count(distinct salary) from employee where e.salary < salary)
+  );
+END
+
+178. Rank Scores
+https://leetcode.com/problems/rank-scores/
+
+
 511. Game Play Analysis I
 https://leetcode.com/problems/game-play-analysis-i/
 512. Game Play Analysis II
