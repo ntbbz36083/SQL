@@ -165,6 +165,46 @@ select patient_id, patient_name, conditions
 from patients
 where conditions like '%DIAB1%'
 
+1532. The Most Recent Three Orders
+https://leetcode.com/problems/the-most-recent-three-orders/
+
+select c.name as customer_name,
+                c.customer_id,
+                o.order_id,
+                o.order_date
+from 
+(select customer_id, order_id, order_date,
+RANK() over (PARTITION by customer_id order by order_date desc) as rnk
+from orders) o
+join customers c
+on o.customer_id=c.customer_id
+where o.rnk <=3
+order by c.name, c.customer_id, o.order_date desc
+
+1543. Fix Product Name Format
+https://leetcode.com/problems/fix-product-name-format/
+
+select lower(replace(product_name,' ','')) as product_name, 
+left(sale_date,7) as sale_date, 
+count(sale_id) as total
+from sales
+group by 1,2
+order by 1,2
+
+1549. The Most Recent Orders for Each Product
+https://leetcode.com/problems/the-most-recent-orders-for-each-product/
+
+select p.product_name, p.product_id, o.order_id, o.order_date
+from orders o
+join products p
+on o.product_id = p.product_id
+where (o.product_id, o.order_date) 
+in 
+(select product_id, max(order_date) md
+from orders
+group by product_id)
+order by p.product_name, p.product_id, o.order_id
+
 1555. Bank Account Summary
 https://leetcode.com/problems/bank-account-summary/
 
@@ -186,15 +226,6 @@ left join
     group by paid_to) in_tmp
 on u.user_id = in_tmp.paid_to
 
-1543. Fix Product Name Format
-https://leetcode.com/problems/fix-product-name-format/
-
-select lower(replace(product_name,' ','')) as product_name, 
-left(sale_date,7) as sale_date, 
-count(sale_id) as total
-from sales
-group by 1,2
-order by 1,2
 
 1565. Unique Orders and Customers Per Month
 https://leetcode.com/problems/unique-orders-and-customers-per-month/
