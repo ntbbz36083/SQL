@@ -118,6 +118,70 @@ left join activity a2
 on a1.player_id = a2.player_id and a1.first_login + 1 = a2.event_date
 group by install_dt
 
+1445. Apples & Oranges
+https://leetcode.com/problems/apples-oranges/
+
+select sale_date, sum(case when fruit='apples' then sold_num else -sold_num end) as diff
+from sales
+group by sale_date
+
+1454. Active Users
+https://leetcode.com/problems/active-users/
+
+select distinct l1.id, a.name
+from
+logins l1 join logins l2
+on l1.id = l2.id and datediff(l1.login_date, l2.login_date) between 1 and 4
+join accounts a 
+on l1.id = a.id
+group by l1.id, l1.login_date
+having count(distinct l2.login_date)=4 
+
+1459. Rectangles Area
+https://leetcode.com/problems/rectangles-area/
+
+SELECT  pt1.id as P1, pt2.id as P2,
+		ABS(pt1.x_value - pt2.x_value)*ABS(pt1.y_value-pt2.y_value) as AREA
+FROM Points pt1 JOIN Points pt2 
+ON pt1.id<pt2.id
+AND pt1.x_value!=pt2.x_value 
+AND pt2.y_value!=pt1.y_value
+ORDER BY AREA DESC, p1, p2
+
+1468. Calculate Salaries
+https://leetcode.com/problems/calculate-salaries/
+
+select b.company_id, 
+b.employee_id, 
+b.employee_name, 
+round(b.salary*(1-a.rate)) as salary
+from 
+(select company_id, 
+case when max(salary)> 10000 then 0.49
+when max(salary)>= 1000 and max(salary)<= 10000 then 0.24 else 0 end as rate
+from salaries
+group by company_id) a
+join salaries b 
+on a.company_id = b.company_id
+
+
+1479. Sales by Day of the Week
+https://leetcode.com/problems/sales-by-day-of-the-week/
+
+select i.item_category as Category,
+sum(case when dayofweek(o.order_date)=2 then quantity else 0 end) as 'Monday',
+sum(case when dayofweek(o.order_date)=3 then quantity else 0 end) as 'Tuesday',
+sum(case when dayofweek(o.order_date)=4 then quantity else 0 end) as 'Wednesday',
+sum(case when dayofweek(o.order_date)=5 then quantity else 0 end) as 'Thursday',
+sum(case when dayofweek(o.order_date)=6 then quantity else 0 end) as 'Friday',
+sum(case when dayofweek(o.order_date)=7 then quantity else 0 end) as 'Saturday',
+sum(case when dayofweek(o.order_date)=1 then quantity else 0 end) as 'Sunday'
+from items i left join
+orders o
+on i.item_id = o.item_id
+group by i.item_category
+order by i.item_category
+
 1484. Group Sold Products By The Date
 https://leetcode.com/problems/group-sold-products-by-the-date/
 
@@ -139,7 +203,16 @@ where c.kids_content='Y'
 and c.content_type='Movies'
 and left(t.program_date,7)='2020-06'
 
+1501. Countries You Can Safely Invest In
+https://leetcode.com/problems/countries-you-can-safely-invest-in/
 
+select con.name as country
+from person p join calls c
+on p.id = c.caller_id or p.id = c.callee_id
+join country con 
+on left(p.phone_number,3) = con.country_code
+group by con.name
+having avg(c.duration) >(select avg(duration) from calls)
 
 1511. Customer Order Frequency
 https://leetcode.com/problems/customer-order-frequency/
