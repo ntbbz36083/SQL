@@ -55,6 +55,9 @@ where e1.salary > e2.salary
 https://leetcode.com/problems/duplicate-emails/
 select email from person group by email having count(*) > 1
 
+183. Customers Who Never Order
+https://leetcode.com/problems/customers-who-never-order/
+
 select name as Customers from customers
 where id not in (select customerid from orders)
 
@@ -62,6 +65,51 @@ select c.name as customers
 from customers c left join orders o
 on c.id = o.CustomerId
 where o.CustomerId is null
+
+184. Department Highest Salary
+https://leetcode.com/problems/department-highest-salary/
+
+select d.name as department, e.name as employee, e.salary
+from employee e join department d
+on e.departmentid = d.id
+where (e.departmentid,e.salary)
+in
+(select departmentid, max(salary) ms
+from employee
+group by departmentid)
+
+185. Department Top Three Salaries
+https://leetcode.com/problems/department-top-three-salaries/
+
+select d.name as department, e.name as employee, e.salary
+from employee e join department d
+on e.departmentid = d.id
+where 2 >=(select count(distinct salary) from employee where e.salary <salary and e.departmentid = departmentid)
+
+select d.name as department, e.name as employee, e.salary
+from 
+(select *, dense_rank() over(partition by departmentid order by salary desc) as rnk
+ from employee) e 
+join department d
+on e.DepartmentId = d.id
+where e.rnk <=3
+
+196. Delete Duplicate Emails
+https://leetcode.com/problems/delete-duplicate-emails/
+
+delete p1 from
+person p1 join person p2
+on p1.email = p2.email
+where p1.id > p2.id
+
+197. Rising Temperature
+https://leetcode.com/problems/rising-temperature/
+
+select w2.id
+from weather w1
+join weather w2
+on to_days(w1.recorddate)+1 = to_days(w2.recorddate)
+where w2.temperature > w1.temperature
 
 511. Game Play Analysis I
 https://leetcode.com/problems/game-play-analysis-i/
