@@ -111,6 +111,24 @@ join weather w2
 on to_days(w1.recorddate)+1 = to_days(w2.recorddate)
 where w2.temperature > w1.temperature
 
+262. Trips and Users
+https://leetcode.com/problems/trips-and-users/
+
+select request_at as day, 
+round(sum(case when status like 'cancelled%' then 1 else 0 end )/count(*),2) as "Cancellation Rate"
+from trips
+where client_id not in 
+(select users_id
+ from users 
+ where banned='Yes')
+and driver_id not in
+(select users_id
+ from users 
+ where banned='Yes')
+and request_at between '2013-10-01' and '2013-10-03'
+ group by request_at
+ 
+
 511. Game Play Analysis I
 https://leetcode.com/problems/game-play-analysis-i/
 512. Game Play Analysis II
