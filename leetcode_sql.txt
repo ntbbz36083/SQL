@@ -160,6 +160,12 @@ where (player_id, event_date) in
 from Activity 
  group by player_id)
  
+select player_id, device_id
+from(
+select player_id, device_id, rank() over(partition by player_id order by event_date) as rnk
+from activity) a
+where rnk=1
+ 
 534. Game Play Analysis III
 select  a2.player_id, a2.event_date, sum(a1.games_played) games_played_so_far 
 from Activity a1 inner join Activity a2
@@ -175,6 +181,97 @@ left join
 Activity a2
 on a1.first_login + 1 = a2.event_date
 and a1.player_id = a2.player_id
+
+569. Median Employee Salary
+https://leetcode.com/problems/median-employee-salary/
+
+with t1 as(
+select *, row_number() over(partition by Company order by Salary) as rnk,
+count(Id) over(partition by Company) as cnt
+from Employee )
+
+select Id, Company, Salary
+from t1
+where rnk between cnt/2 and cnt/2+1;
+
+570. Managers with at Least 5 Direct Reports
+https://leetcode.com/problems/managers-with-at-least-5-direct-reports/
+
+select e.name
+from
+(select managerid
+from employee
+group by managerid
+having count(id) >=5) a join employee e
+on a.managerid = e.id
+
+571. Find Median Given Frequency of Numbers
+https://leetcode.com/problems/find-median-given-frequency-of-numbers/
+
+select avg(n.number) as median 
+from numbers n
+where n.frequency >= abs((select sum(frequency) from numbers where n.number >= number) -
+(select sum(frequency) from numbers where n.number <= number))
+
+574. Winning Candidate
+https://leetcode.com/problems/winning-candidate/
+
+select Name from Candidate where id = (select candidateid from Vote group by candidateid order by count(candidateid) desc limit 1)
+
+577. Employee Bonus
+https://leetcode.com/problems/employee-bonus/
+
+select e.name, b.bonus
+from employee e
+left join bonus b
+on e.empid = b.empid
+where b.bonus < 1000 or b.bonus is null
+
+578. Get Highest Answer Rate Question
+https://leetcode.com/problems/get-highest-answer-rate-question/
+
+with tmp as (
+select
+    question_id,
+    sum(case when answer_id is not Null then 1 else 0 end) / count(*) as rate
+from survey_log
+group by question_id)
+
+select
+question_id as survey_log
+from tmp
+where rate in (select max(rate) from tmp)
+
+579. Find Cumulative Salary of an Employee
+https://leetcode.com/problems/find-cumulative-salary-of-an-employee/
+
+select a.id, a.month, a.salary from
+
+(select id, month, sum(salary) over (partition by id order by month rows between 2 preceding and 0 following) as Salary, rank() over (partition by id order by month desc) as rank from Employee) a
+
+where a.rank !=1 order by a.id, a.month desc
+
+SELECT   A.Id, MAX(B.Month) as Month, SUM(B.Salary) as Salary
+FROM     Employee A, Employee B
+WHERE    A.Id = B.Id AND B.Month BETWEEN (A.Month-3) AND (A.Month-1)
+GROUP BY A.Id, A.Month
+ORDER BY Id, Month DESC
+
+580. Count Student Number in Departments
+https://leetcode.com/problems/count-student-number-in-departments/
+
+select d.dept_name, count(s.student_id) as student_number
+from student s
+right join department d
+on s.dept_id = d.dept_id
+group by d.dept_id
+order by student_number desc, d.dept_name
+
+584. Find Customer Referee
+https://leetcode.com/problems/find-customer-referee/
+
+select name from customer
+where referee_id != 2 or referee_id is null
 
 1097. Game Play Analysis V
 select a1.first_login as install_dt, count(distinct a1.player_id) installs, round(sum(case when a2.event_date is not null then 1 else 0 end) / count(distinct a1.player_id) ,2) Day1_retention  
