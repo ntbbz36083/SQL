@@ -369,6 +369,82 @@ group by s.date1
 order by s.date1
 ;
 
+601. Human Traffic of Stadium
+https://leetcode.com/problems/human-traffic-of-stadium/
+
+select cte.id, cte.visit_date, cte.people
+from
+(SELECT ID
+        , visit_date
+        , people
+        , LEAD(people, 1) OVER (ORDER BY id) nxt
+        , LEAD(people, 2) OVER (ORDER BY id) nxt2
+        , LAG(people, 1) OVER (ORDER BY id) pre
+        , LAG(people, 2) OVER (ORDER BY id) pre2
+    FROM Stadium
+) as cte
+where (cte.people >=100 and cte.nxt>=100 and cte.nxt2>=100)
+or (cte.people >=100 and cte.nxt>=100 and cte.pre>=100)
+or (cte.people >=100 and cte.pre>=100 and cte.pre2>=100)
+
+602. Friend Requests II: Who Has the Most Friends
+https://leetcode.com/problems/friend-requests-ii-who-has-the-most-friends/
+
+select b.id, b.num
+from 
+(select a.requester_id as id, count(*) as num, dense_rank() over(order by count(*) desc) as rnk
+from
+(
+(select requester_id, accepter_id from request_accepted)
+union
+(select accepter_id, requester_id from request_accepted)
+) a
+group by a.requester_id) b
+where b.rnk=1
+
+603. Consecutive Available Seats
+https://leetcode.com/problems/consecutive-available-seats/
+
+select a.seat_id
+from
+(select seat_id, 
+free, 
+lead(free,1) over(order by seat_id) nxt, 
+lag(free,1) over(order by seat_id) pre
+from cinema) a
+where (a.free=1 and a.nxt=1)
+or (a.pre=1 and a.free=1)
+order by a.seat_id
+
+607. Sales Person
+https://leetcode.com/problems/sales-person/
+
+select name from salesperson
+where sales_id
+not in
+(select sales_id
+from orders
+where com_id
+in
+(select com_id from company where name = 'RED'))
+
+608. Tree Node
+https://leetcode.com/problems/tree-node/
+
+select distinct t1.id,
+(case when t1.p_id is null then 'Root' 
+ when t2.p_id is not null then 'Inner'
+ when t2.p_id is null and t2.id is null then 'Leaf' end) as type
+from tree t1
+left join tree t2
+on t1.id = t2.p_id
+
+610. Triangle Judgement
+https://leetcode.com/problems/triangle-judgement/
+
+select *, case when x+y > z and y+z > x and x+z > y then 'Yes' else 'No' end as triangle
+from triangle
+
 1097. Game Play Analysis V
 select a1.first_login as install_dt, count(distinct a1.player_id) installs, round(sum(case when a2.event_date is not null then 1 else 0 end) / count(distinct a1.player_id) ,2) Day1_retention  
 from
