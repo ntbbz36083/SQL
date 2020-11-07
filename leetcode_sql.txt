@@ -445,6 +445,107 @@ https://leetcode.com/problems/triangle-judgement/
 select *, case when x+y > z and y+z > x and x+z > y then 'Yes' else 'No' end as triangle
 from triangle
 
+612. Shortest Distance in a Plane
+https://leetcode.com/problems/shortest-distance-in-a-plane/submissions/
+
+select round(sqrt(pow(p1.x - p2.x,2) + pow(p1.y - p2.y,2)),2) as shortest
+from point_2d p1, point_2d p2
+where p1.x != p2.x or p1.y != p2.y
+order by 1 limit 1
+
+613. Shortest Distance in a Line
+https://leetcode.com/problems/shortest-distance-in-a-line/
+
+select min(abs(p1.x-p2.x)) as shortest
+from point p1, point p2
+where p1.x != p2.x
+
+614. Second Degree Follower
+https://leetcode.com/problems/second-degree-follower/
+
+select f1.follower as follower, count( distinct f2.follower) as num
+from follow f1 join follow f2 
+on f1.follower = f2.followee
+group by f1.follower
+order by f1.follower
+
+615. Average Salary: Departments VS Company
+https://leetcode.com/problems/average-salary-departments-vs-company/
+
+with a as 
+(
+select left(s.pay_date,7) as pay_month, e.department_id, avg(s.amount) as avg_sa  
+    from salary s join employee e
+    on s.employee_id = e.employee_id
+    group by 1, 2 
+),
+
+b as 
+(
+select left(s.pay_date,7) as pay_month, avg(s.amount) as avg_sa
+    from salary s
+    group by 1
+)
+
+select a.pay_month, a.department_id, 
+(case when a.avg_sa > b.avg_sa then 'higher' 
+ when  a.avg_sa = b.avg_sa then 'same'
+ else 'lower' end) as comparison
+from a join b 
+on a.pay_month = b.pay_month
+
+618. Students Report By Geography
+https://leetcode.com/problems/students-report-by-geography/
+
+select max(case when continent = 'America' then name end) as 'America',
+    max(case when continent = 'Asia' then name end) as 'Asia',
+    max(case when continent = 'Europe' then name end) as 'Europe'
+from 
+(select *, row_number() over(partition by continent order by name) as row_id from student) a
+group by a.row_id
+
+619. Biggest Single Number
+https://leetcode.com/problems/biggest-single-number/
+
+select (select num
+from my_numbers
+group by num
+having count(*) = 1
+order by num desc limit 1) as num
+
+620. Not Boring Movies
+https://leetcode.com/problems/not-boring-movies/
+
+select * 
+from cinema
+where id % 2 = 1 and description not like "boring"
+order by rating desc
+
+626. Exchange Seats
+https://leetcode.com/problems/exchange-seats/
+
+select (case when id %2 = 1 and id = (select max(id) from seat) then id
+        when id % 2 = 1 then id+1 
+        when id % 2 =0 then id-1 end) as id, 
+        student
+from seat
+order by id
+
+627. Swap Salary
+https://leetcode.com/problems/swap-salary/
+
+update salary
+set sex = (case when sex = 'f' then 'm' else 'f' end)
+
+1045. Customers Who Bought All Products
+https://leetcode.com/problems/customers-who-bought-all-products/
+
+select customer_id
+from customer
+group by customer_id
+having count(distinct product_key) = 
+(select count(distinct product_key) from product)
+
 1097. Game Play Analysis V
 select a1.first_login as install_dt, count(distinct a1.player_id) installs, round(sum(case when a2.event_date is not null then 1 else 0 end) / count(distinct a1.player_id) ,2) Day1_retention  
 from
