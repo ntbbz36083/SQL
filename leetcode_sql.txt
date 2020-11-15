@@ -788,6 +788,274 @@ FROM Activity
 WHERE activity_date >= '2019-06-28'
 AND activity_date <= '2019-07-27'
 
+1148. Article Views I
+https://leetcode.com/problems/article-views-i/
+
+select  distinct viewer_id as id
+from views
+where author_id=viewer_id
+order by id
+
+1149. Article Views II
+https://leetcode.com/problems/article-views-ii/
+
+select distinct viewer_id as id
+from views
+group by view_date, viewer_id
+having count(distinct article_id) > 1
+order by id
+
+1158. Market Analysis I
+https://leetcode.com/problems/market-analysis-i/
+
+select u.user_id as buyer_id, u.join_date, ifnull(count(o.order_id),0) as orders_in_2019
+from (select * from orders where year(order_date)='2019') o 
+right join users u
+on o.buyer_id = u.user_id
+group by u.user_id
+
+1159. Market Analysis II
+https://leetcode.com/problems/market-analysis-ii/
+
+select u.user_id as seller_id, case when u.favorite_brand = b.item_brand then 'yes' else 'no' end as 2nd_item_fav_brand
+from
+    users u
+left join 
+    (select a.seller_id, i.item_brand
+    from
+    (select seller_id,item_id, rank() over(partition by seller_id order by order_date) rnk
+    from orders) a
+     join items i on i.item_id = a.item_id
+where a.rnk=2) b
+on u.user_id = b.seller_id
+
+1164. Product Price at a Given Date
+https://leetcode.com/problems/product-price-at-a-given-date/
+
+with a as 
+(select product_id, new_price from products
+where (product_id, change_date)
+in
+(select product_id, max(change_date) 
+from products
+where change_date <= '2019-08-16'
+group by product_id))
+
+select temp.product_id, case when a.new_price is null then 10 else a.new_price end as price
+from
+(select distinct product_id from products) temp
+left join 
+a
+on temp.product_id = a.product_id
+
+1173. Immediate Food Delivery I
+https://leetcode.com/problems/immediate-food-delivery-i/
+
+select round(sum(case when order_date = customer_pref_delivery_date then 1  else 0 end)/count(*)*100.0,2) as immediate_percentage
+from delivery
+
+1174. Immediate Food Delivery II
+https://leetcode.com/problems/immediate-food-delivery-ii/
+
+with a as 
+(select customer_id, min(order_date) as mo
+from delivery
+group by customer_id)
+
+select round(sum(case when d.customer_pref_delivery_date=a.mo then 1 else 0 end)/count(distinct d.customer_id)*100,2) as immediate_percentage
+from
+(select distinct customer_id, customer_pref_delivery_date
+from delivery) d join a
+on d.customer_id = a.customer_id
+
+1179. Reformat Department Table
+https://leetcode.com/problems/reformat-department-table/
+
+select id, 
+sum(case when month ='Jan' then revenue else null end) as Jan_revenue,
+sum(case when month ='Feb' then revenue else null end) as Feb_revenue,
+sum(case when month ='Mar' then revenue else null end) as Mar_revenue,
+sum(case when month ='Apr' then revenue else null end) as Apr_revenue,
+sum(case when month ='May' then revenue else null end) as May_revenue,
+sum(case when month ='Jun' then revenue else null end) as Jun_revenue,
+sum(case when month ='Jul' then revenue else null end) as Jul_revenue,
+sum(case when month ='Aug' then revenue else null end) as Aug_revenue,
+sum(case when month ='Sep' then revenue else null end) as Sep_revenue,
+sum(case when month ='Oct' then revenue else null end) as Oct_revenue,
+sum(case when month ='Nov' then revenue else null end) as Nov_revenue,
+sum(case when month ='Dec' then revenue else null end) as Dec_revenue
+from department
+group by id
+order by id
+
+1193. Monthly Transactions I
+https://leetcode.com/problems/monthly-transactions-i/
+
+select left(trans_date,7) as month,
+country,
+count(id) as trans_count,
+sum(case when state='approved' then 1 else 0 end) as approved_count,
+sum(amount) as trans_total_amount,
+sum(case when state='approved' then amount else 0 end) as approved_total_amount
+from transactions
+group by 1,2
+
+1194. Tournament Winners
+https://leetcode.com/problems/tournament-winners/
+
+with scores as 
+((select first_player as player_id, first_score as score from matches)
+union all 
+(select second_player as player_id, second_score as score from matches)),
+b as
+(select player_id, sum(score) as score
+from scores
+group by player_id),
+c as 
+(select p.group_id, p.player_id, rank() over(partition by p.group_id order by b.score desc, p.player_id) as rnk
+from players p join b 
+on p.player_id = b.player_id)
+
+select group_id, player_id
+from c
+where rnk=1
+
+1204. Last Person to Fit in the Elevator
+https://leetcode.com/problems/last-person-to-fit-in-the-elevator/
+
+SELECT q1.person_name
+FROM Queue q1 JOIN Queue q2 ON q1.turn >= q2.turn
+GROUP BY q1.turn
+HAVING SUM(q2.weight) <= 1000
+ORDER BY SUM(q2.weight) DESC
+LIMIT 1
+
+1205. Monthly Transactions II
+https://leetcode.com/problems/monthly-transactions-ii/
+
+with a as 
+(
+(select left(trans_date,7) as month, country, state, amount from transactions
+    where state='approved')
+union all    
+(select left(c.trans_date, 7) as month, t.country, 'back' as state, t.amount
+    from Chargebacks c join Transactions t
+ on c.trans_id = t.id
+)
+)
+select a.month,  
+        a.country,
+        sum(case when a.state='approved' then 1 else 0 end) as approved_count,
+        sum(case when a.state='approved' then a.amount else 0 end) as approved_amount,
+        sum(case when a.state='back' then 1 else 0 end) as chargeback_count,
+        sum(case when a.state='back' then a.amount else 0 end)
+        as chargeback_amount
+from
+a
+group by 1,2
+
+1211. Queries Quality and Percentage
+https://leetcode.com/problems/queries-quality-and-percentage/
+
+select query_name, 
+        round(avg(quality),2) as quality,
+        round(sum(poor_query)/count(*)*100.0,2) as poor_query_percentage
+from
+    (select query_name,
+            (rating/position) as quality,
+            case when rating < 3 then 1 else 0 end as poor_query
+    from Queries) a
+group by query_name
+
+1212. Team Scores in Football Tournament
+https://leetcode.com/problems/team-scores-in-football-tournament/
+
+with a as
+((select host_team, guest_team, host_goals, guest_goals
+from matches)
+union all 
+(select guest_team, host_team, guest_goals, host_goals
+from matches)),
+b as 
+(
+select host_team, 
+    case when host_goals>guest_goals then 3 
+    when host_goals=guest_goals then 1 
+    else 0 end as score
+from a
+),
+c as 
+(
+select host_team as team_id, sum(score) as score
+from b
+group by host_team
+)
+
+select t.team_id, t.team_name, ifnull(c.score,0) as num_points
+from teams t left join c
+on t.team_id = c.team_id
+order by num_points desc, t.team_id
+
+1225. Report Contiguous Dates
+https://leetcode.com/problems/report-contiguous-dates/
+
+with a as
+(
+(select fail_date as day, 'failed' as stats, rank() over(order by fail_date) as rk
+from failed where fail_date between '2019-01-01' and '2019-12-31')
+union 
+(select success_date as day, 'succeeded' as stats, rank() over(order by success_date) as rk
+from Succeeded where success_date between '2019-01-01' and '2019-12-31')
+),
+
+b as 
+(
+select day, stats, (rank() over(order by day) - rk) int_1
+from a
+)
+
+select stats as period_state, min(day) as start_date, max(day) end_date
+from b
+group by int_1, stats
+order by start_date
+
+1241. Number of Comments per Post
+https://leetcode.com/problems/number-of-comments-per-post/
+
+select s1.sub_id as post_id,
+    count(distinct s2.sub_id) as number_of_comments
+from submissions s1
+left join submissions s2
+on s1.sub_id = s2.parent_id
+where s1.parent_id is null
+group by s1.sub_id
+
+1251. Average Selling Price
+https://leetcode.com/problems/average-selling-price/
+
+select u.product_id, 
+        round(sum(p.price * u.units)/sum(u.units),2) as average_price
+from prices p
+join unitssold u
+on p.product_id = u.product_id
+and (u.purchase_date between p.start_date and p.end_date)
+group by u.product_id
+
+1264. Page Recommendations
+https://leetcode.com/problems/page-recommendations/
+
+
+
+1270. All People Report to the Given Manager
+https://leetcode.com/problems/all-people-report-to-the-given-manager/
+
+
+
+1280. Students and Examinations
+https://leetcode.com/problems/students-and-examinations/
+
+
+
 1445. Apples & Oranges
 https://leetcode.com/problems/apples-oranges/
 
