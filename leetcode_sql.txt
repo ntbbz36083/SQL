@@ -1044,17 +1044,38 @@ group by u.product_id
 1264. Page Recommendations
 https://leetcode.com/problems/page-recommendations/
 
-
+select distinct page_id as recommended_page
+from
+    (select
+    case when user1_id=1 then user2_id
+        when user2_id=1 then user1_id
+        end as user_id
+    from Friendship) a
+join Likes l
+on a.user_id=l.user_id
+where page_id not in 
+(select page_id from Likes where user_id=1)
 
 1270. All People Report to the Given Manager
 https://leetcode.com/problems/all-people-report-to-the-given-manager/
 
-
+SELECT e1.employee_id
+FROM Employees e1
+JOIN Employees e2
+ON e1.manager_id = e2.employee_id
+JOIN Employees e3
+ON e2.manager_id = e3.employee_id
+WHERE e3.manager_id = 1 AND e1.employee_id != 1
 
 1280. Students and Examinations
 https://leetcode.com/problems/students-and-examinations/
 
-
+select s.student_id, s.student_name, sb.subject_name, count(e.subject_name) as attended_exams
+from students s join Subjects sb
+left join Examinations e
+on s.student_id = e.student_id and sb.subject_name=e.subject_name
+group by s.student_id,sb.subject_name
+order by s.student_id, sb.subject_name
 
 1445. Apples & Oranges
 https://leetcode.com/problems/apples-oranges/
