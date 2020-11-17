@@ -1090,6 +1090,60 @@ group by country_id) a
 join Countries c
 on a.country_id = c.country_id
 
+1350. Students With Invalid Departments
+https://leetcode.com/problems/students-with-invalid-departments/
+
+select id, name
+from students
+where department_id not in
+(select id from Departments)
+
+1355. Activity Participants
+https://leetcode.com/problems/activity-participants/
+
+select activity
+from
+(select activity,
+        rank() over(order by count(id)) as cnt_asc,
+        rank() over(order by count(id) desc) as cnt_desc
+from Friends
+group by activity) t
+where t.cnt_asc != 1 and t.cnt_desc !=1
+
+1364. Number of Trusted Contacts of a Customer
+https://leetcode.com/problems/number-of-trusted-contacts-of-a-customer/
+
+select i.invoice_id,
+       c.customer_name,
+       i.price,
+       count(distinct t.contact_name) as contacts_cnt,
+       sum(case when (contact_name,contact_email) in (select distinct customer_name,email from Customers) then 1 else 0 end) as trusted_contacts_cnt
+from Invoices as i
+join Customers as c on c.customer_id = i.user_id
+left join Contacts as t on c.customer_id = t.user_id
+group by i.invoice_id
+
+1369. Get the Second Most Recent Activity
+https://leetcode.com/problems/get-the-second-most-recent-activity/
+
+(select username,
+        activity,
+        startDate,
+        endDate
+from
+    (select username,
+            activity,
+            startDate,
+            endDate,
+            rank() over(partition by username order by startdate desc) rn
+    from UserActivity) a
+where a.rn=2)
+union all
+(select * from 
+UserActivity 
+group by username
+having count(username)=1)
+
 1445. Apples & Oranges
 https://leetcode.com/problems/apples-oranges/
 
