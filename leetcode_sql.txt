@@ -1077,6 +1077,19 @@ on s.student_id = e.student_id and sb.subject_name=e.subject_name
 group by s.student_id,sb.subject_name
 order by s.student_id, sb.subject_name
 
+1294. Weather Type in Each Country
+https://leetcode.com/problems/weather-type-in-each-country/
+
+select c.country_name, case when a.aw<=15 then 'Cold' 
+when a.aw>=25 then 'Hot' else 'Warm' end as weather_type
+from
+(select country_id, avg(weather_state) as aw
+from weather 
+where left(day,7)='2019-11'
+group by country_id) a 
+join Countries c
+on a.country_id = c.country_id
+
 1445. Apples & Oranges
 https://leetcode.com/problems/apples-oranges/
 
