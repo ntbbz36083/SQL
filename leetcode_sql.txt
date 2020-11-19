@@ -1144,6 +1144,114 @@ UserActivity
 group by username
 having count(username)=1)
 
+1378. Replace Employee ID With The Unique Identifier
+https://leetcode.com/problems/replace-employee-id-with-the-unique-identifier/
+
+select ei.unique_id, e.name
+from employees e left join employeeUNI ei
+on e.id = ei.id
+
+1384. Total Sales Amount by Year
+https://leetcode.com/problems/total-sales-amount-by-year/
+
+with RECURSIVE dates as
+(select min(period_start) s_date , max(period_end) e_date from Sales
+	union all
+ select DATE_ADD(s_date, INTERVAL 1 DAY) , e_date from dates
+ where s_date<e_date
+) 
+
+select
+cast(p.product_id as char) as PRODUCT_ID
+, p.product_name as PRODUCT_NAME
+, cast(year(s_date) as char) as REPORT_YEAR
+, sum(average_daily_sales) as TOTAL_AMOUNT
+from Product p 
+left outer join Sales s on p.product_id = s.product_id
+left outer join dates d on d.s_date between s.period_start and s.period_end 
+group by cast(p.product_id as char) , p.product_name, cast(year(s_date) as char)
+order by 1,3;
+
+1393. Capital Gain/Loss
+https://leetcode.com/problems/capital-gainloss/
+
+select stock_name,
+        sum(case when operation='Buy' then -price else price end) as capital_gain_loss
+from stocks
+group by stock_name
+
+1398. Customers Who Bought Products A and B but Not C
+https://leetcode.com/problems/customers-who-bought-products-a-and-b-but-not-c/
+
+select a.customer_id, a.customer_name
+from customers a , orders b
+where a.customer_id  = b.customer_id
+group by a.customer_id, a.customer_name
+having sum(b.product_name="A") >0 and sum(b.product_name="B") > 0 and sum(b.product_name="C")=0
+
+1407. Top Travellers
+https://leetcode.com/problems/top-travellers/
+
+select u.name, ifnull(sum(r.distance),0) as travelled_distance
+from users u left join rides r
+on u.id = r.user_id
+group by u.id, u.name
+order by travelled_distance desc, u.name
+
+1412. Find the Quiet Students in All Exams
+https://leetcode.com/problems/find-the-quiet-students-in-all-exams/
+
+with a as
+(
+select exam_id, 
+        student_id,
+        rank() over(partition by exam_id order by score desc) as 'high_score',
+        rank() over(partition by exam_id order by score) as 'low_score'
+from exam
+)
+
+select distinct e.student_id, s.student_name
+from Student s right join exam e
+on s.student_id = e.student_id
+where e.student_id not in 
+(select student_id from a where high_score=1 or low_score=1)
+order by e.student_id
+
+1421. NPV Queries
+https://leetcode.com/problems/npv-queries/
+
+select q.id, q.year, ifnull(n.npv,0) as npv
+from queries q left join npv n
+on q.id = n.id and q.year = n.year
+
+1435. Create a Session Bar Chart
+https://leetcode.com/problems/create-a-session-bar-chart/
+
+SELECT '[0-5>' AS 'bin', SUM(duration/60 < 5) AS 'total'
+FROM Sessions
+UNION
+SELECT '[5-10>' AS 'bin', SUM(duration/60 >= 5 AND duration/60 < 10) AS 'total'
+FROM Sessions
+UNION
+SELECT '[10-15>' AS 'bin', SUM(duration/60 >= 10 AND duration/60 < 15) AS 'total'
+FROM Sessions
+UNION
+SELECT '15 or more' AS 'bin', SUM(duration/60 >= 15) AS 'total'
+FROM Sessions
+
+1440. Evaluate Boolean Expression
+https://leetcode.com/problems/evaluate-boolean-expression/
+
+select e.*,
+        (case when e.operator ='>' and v1.value > v2.value then 'true'
+        when e.operator ='<' and v1.value < v2.value then 'true'
+        when e.operator ='=' and v1.value = v2.value then 'true'
+        else 'false' end) as value
+from variables v1 join Expressions e
+on v1.name = e.left_operand
+join Variables v2
+on v2.name = e.right_operand
+
 1445. Apples & Oranges
 https://leetcode.com/problems/apples-oranges/
 
