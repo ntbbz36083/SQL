@@ -1570,3 +1570,117 @@ from users u right join register r
 on u.user_id = r.user_id
 group by r.contest_id
 order by percentage desc, contest_id 
+
+1635. Hopper Company Queries I
+https://leetcode.com/problems/hopper-company-queries-i/
+with recursive month as (
+    select 1 as month
+    union
+    select month + 1 as month 
+	from month where month < 12
+),
+ driver_table as 
+ (
+ select driver_id, 
+ case when year(join_date) =2019 then 1 else month(join_date) end as month
+ from drivers
+ where join_date <= '2020-12-31'
+ ),
+ accept_rides as 
+ (
+ select a.ride_id, a.driver_id, month(r.requested_at) as month
+ from rides r join AcceptedRides a
+ on r.ride_id = a.ride_id
+ and r.requested_at between '2020-01-01' and '2020-12-31'
+ )
+ 
+ select t.month, 
+        count(distinct d.driver_id) as active_drivers,
+        count(distinct a.ride_id) as accepted_rides
+ from month_table t left join 
+ driver_table d on t.month >= d.month
+ left join accept_rides a 
+ on t.month = a.month
+ group by t.month
+ 
+ 
+ 1645. Hopper Company Queries II
+ https://leetcode.com/problems/hopper-company-queries-ii/
+ 
+ # Write your MySQL query statement below
+with recursive month as (
+    select 1 as month
+    union
+    select month + 1 as month 
+	from month where month < 12
+),
+driver_table as 
+ (
+ select driver_id, 
+ case when year(join_date) =2019 then 1 else month(join_date) end as month
+ from drivers
+ where join_date <= '2020-12-31'
+ ),
+accept_rides as 
+ (
+ select a.ride_id, a.driver_id, month(r.requested_at) as month
+ from rides r join AcceptedRides a
+ on r.ride_id = a.ride_id
+ and r.requested_at between '2020-01-01' and '2020-12-31'
+ )
+ 
+select t.month, round(ifnull(count(distinct a.driver_id)/count(distinct d.driver_id)*100,0.00),2) as  working_percentage
+from month_table t left join driver_table d
+on t.month >= d.month
+left join  accept_rides a
+on t.month = a.month
+group by t.month
+ 
+ 1651. Hopper Company Queries III
+ https://leetcode.com/problems/hopper-company-queries-iii/
+ with recursive month as (
+    select 1 as month
+    union
+    select month + 1 as month 
+	from month where month < 12
+),
+distince_duration_table
+as 
+(
+select month(r.requested_at) as month,
+    a.ride_id, a.ride_distance, 
+    a.ride_duration
+    from Rides r join AcceptedRides a
+    on r.ride_id = a.ride_id 
+    and year(r.requested_at) = 2020
+),
+sum_by_month as
+(
+select m.month,
+        ifnull(sum(d.ride_distance),0) as ride_distance,
+        ifnull(sum(d.ride_duration),0) as ride_duration
+    from month m left join distince_duration_table d
+    on m.month = d.month
+    group by m.month
+)
+
+select month,
+        round(avg(ride_distance) over(order by month rows between current row and 2 following),2) as average_ride_distance,
+        round(avg(ride_duration) over(order by month rows between current row and 2 following),2) as average_ride_duration
+from 
+sum_by_month
+order by month
+limit 10
+ 
+ 1661. Average Time of Process per Machine
+ https://leetcode.com/problems/average-time-of-process-per-machine/
+ 
+ select machine_id,
+        round(avg(b.pt),3) as processing_time
+from
+(select machine_id, process_id,
+     sum(case when activity_type = 'start' then -timestamp else timestamp end) as pt
+from Activity
+group by machine_id, process_id) b
+group by machine_id
+order by machine_id
