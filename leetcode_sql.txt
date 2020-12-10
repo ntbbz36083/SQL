@@ -1588,7 +1588,8 @@ with recursive month as (
  ),
  accept_rides as 
  (
- select a.ride_id, a.driver_id, month(r.requested_at) as month
+ select a.ride_id, 
+ month(r.requested_at) as month
  from rides r join AcceptedRides a
  on r.ride_id = a.ride_id
  and r.requested_at between '2020-01-01' and '2020-12-31'
@@ -1684,3 +1685,22 @@ from Activity
 group by machine_id, process_id) b
 group by machine_id
 order by machine_id
+
+1667. Fix Names in a Table
+https://leetcode.com/problems/fix-names-in-a-table/
+select user_id,
+        concat(upper(left(name,1)), lower(right(name, length(name)-1))) as name
+from users
+order by user_id
+
+1677. Product's Worth Over Invoices
+https://leetcode.com/problems/products-worth-over-invoices/
+select p.name, 
+    sum(i.rest) as rest, 
+    sum(i.paid) as paid, 
+    sum(i.canceled) as canceled, 
+    sum(i.refunded) as refunded 
+from product p join invoice i
+on p.product_id = i.product_id
+group by p.name
+order by p.name
