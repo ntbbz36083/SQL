@@ -900,25 +900,33 @@ sum(case when state='approved' then amount else 0 end) as approved_total_amount
 from transactions
 group by 1,2
 
+######## good to learn window function to handle tie situation   ########
 1194. Tournament Winners
 https://leetcode.com/problems/tournament-winners/
 
-with scores as 
-((select first_player as player_id, first_score as score from matches)
-union all 
-(select second_player as player_id, second_score as score from matches)),
-b as
-(select player_id, sum(score) as score
-from scores
-group by player_id),
-c as 
-(select p.group_id, p.player_id, rank() over(partition by p.group_id order by b.score desc, p.player_id) as rnk
-from players p join b 
-on p.player_id = b.player_id)
+with a as
+(
+    select player_id,
+        sum(score) as score
+    from
+        (select first_player as player_id, first_score as score from Matches 
+            union all
+        select second_player as player_id, second_score as score from Matches
+        ) aa
+    group by 1
+),
+
+b as 
+(
+    select p.group_id, p.player_id, 
+        rank() over(partition by p.group_id order by a.score desc,p.player_id) rnk
+    from players p join a using(player_id)
+)
 
 select group_id, player_id
-from c
+from b 
 where rnk=1
+######## good to learn window function to handle tie situation   ########
 
 1204. Last Person to Fit in the Elevator
 https://leetcode.com/problems/last-person-to-fit-in-the-elevator/
@@ -1077,6 +1085,16 @@ on s.student_id = e.student_id and sb.subject_name=e.subject_name
 group by s.student_id,sb.subject_name
 order by s.student_id, sb.subject_name
 
+1285. Find the Start and End Number of Continuous Ranges
+https://leetcode.com/problems/find-the-start-and-end-number-of-continuous-ranges/
+select l1.log_id as start_id, min(l2.log_id) as end_id
+from
+(select log_id from logs where log_id -1 not in (select log_id from logs)) l1,
+(select log_id from logs where log_id +1 not in (select log_id from logs)) l2
+where l1.log_id <= l2.log_id 
+group by l2.log_id
+order by l1.log_id
+
 1294. Weather Type in Each Country
 https://leetcode.com/problems/weather-type-in-each-country/
 
@@ -1089,6 +1107,71 @@ where left(day,7)='2019-11'
 group by country_id) a 
 join Countries c
 on a.country_id = c.country_id
+
+1303. Find the Team Size
+https://leetcode.com/problems/find-the-team-size/
+select e.employee_id, a.team_size 
+from employee e join
+(select team_id, count(distinct employee_id) as team_size
+from employee
+group by team_id) a
+using(team_id)
+
+1308. Running Total for Different Genders
+https://leetcode.com/problems/running-total-for-different-genders/
+select s2.gender, s2.day, 
+        sum(s1.score_points) as total
+from scores s1 join scores s2 
+on s1.gender = s2.gender and s1.day <= s2.day
+group by s2.gender, s2.day
+order by 1,2
+
+########### good for window function usage. ###########
+1321. Restaurant Growth
+https://leetcode.com/problems/restaurant-growth/
+select visited_on,
+        sum(sum(amount)) over(rows between 6 preceding and current row) as amount,
+        round(avg(sum(amount)) over(rows between 6 preceding and current row),2) as average_amount
+from customer
+group by visited_on
+order by visited_on
+limit 6,1000
+########### good for window function usage. ###########
+
+1322. Ads Performance
+https://leetcode.com/problems/ads-performance/
+select ad_id,
+        ifnull(round(sum(case when action='Clicked' then 1 else 0 end)/sum(case when action='Clicked' then 1 when action='Viewed' then 1 else 0 end)*100.0,2),0.00) as ctr
+from ads
+group by ad_id
+order by ctr desc, ad_id
+
+1327. List the Products Ordered in a Period
+https://leetcode.com/problems/list-the-products-ordered-in-a-period/
+select p.product_name, sum(o.unit) as unit
+from orders o join products p
+on o.product_id = p.product_id
+and left(o.order_date,7) = '2020-02'
+group by o.product_id
+having sum(o.unit)>=100
+
+1341. Movie Rating
+https://leetcode.com/problems/movie-rating/
+(select u.name as results
+from movie_rating m join users u
+on m.user_id = u.user_id
+group by m.user_id, u.name
+order by count(m.rating) desc, u.name
+limit 1)
+union all
+(select m.title as results
+from movies m join movie_rating mr
+ on m.movie_id = mr.movie_id
+ where left(mr.created_at,7)='2020-02'
+ group by mr.movie_id,m.title
+ order by avg(mr.rating) desc, m.title
+ limit 1
+)
 
 1350. Students With Invalid Departments
 https://leetcode.com/problems/students-with-invalid-departments/
@@ -1704,3 +1787,9 @@ from product p join invoice i
 on p.product_id = i.product_id
 group by p.name
 order by p.name
+
+1683. Invalid Tweets
+https://leetcode.com/problems/invalid-tweets/
+select tweet_id
+from tweets
+where length(content) > 15
