@@ -636,6 +636,7 @@ GROUP BY s.buyer_id
 having sum(case when p.product_name = 'S8' then 1 else 0 end)>0
 and sum(case when p.product_name = 'Iphone' then 1 else 0 end)=0
 
+######## good usage of min/max to get date_period  ########
 1084. Sales Analysis III
 https://leetcode.com/problems/sales-analysis-iii/
 
@@ -644,6 +645,7 @@ from product p join sales s
 ON p.product_id = s.product_id
 group by p.product_id, p.product_name
 having min(sale_date) >= '2019-01-01' and max(sale_date) <='2019-03-31'
+######## good usage of min/max to get date_period  ########
 
 1097. Game Play Analysis V
 https://leetcode.com/problems/game-play-analysis-v/submissions/
@@ -805,6 +807,7 @@ group by view_date, viewer_id
 having count(distinct article_id) > 1
 order by id
 
+########  good example to distinct difference between (and, where) in join condition  #####
 1158. Market Analysis I
 https://leetcode.com/problems/market-analysis-i/
 
@@ -813,6 +816,7 @@ from (select * from orders where year(order_date)='2019') o
 right join users u
 on o.buyer_id = u.user_id
 group by u.user_id
+########  good example to distinct difference between (and, where) in join condition  #####
 
 1159. Market Analysis II
 https://leetcode.com/problems/market-analysis-ii/
@@ -1720,8 +1724,8 @@ left join  accept_rides a
 on t.month = a.month
 group by t.month
  
- 1651. Hopper Company Queries III
- https://leetcode.com/problems/hopper-company-queries-iii/
+1651. Hopper Company Queries III
+https://leetcode.com/problems/hopper-company-queries-iii/
  with recursive month as (
     select 1 as month
     union
